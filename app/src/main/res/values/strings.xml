@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">Weather</string>
+    <string name="home_fragment_map_menu_item">Map view</string>
+    <string name="permission_rationale">We need permission to %1$s in order to %2$s</string>
+    <string name="coarse_location_permission">accurate location</string>
+    <string name="coarse_location_rationale">monitor your given location</string>
+    <string name="coarse_location_no_permission_rationale">We would not be able to show you the weather for the current location</string>
+    <string name="dialog_permission_request_title">We need your permission</string>
+    <string name="dialog_no_permission_title">We need your permission</string>
+    <string name="dialog_permission_button_positive">Approve</string>
+    <string name="dialog_permission_button_negative">Decline</string>
+    <string name="no_internet_message">Internet unavailable, showing cached data.</string>
+
+    <string name="turn_on_gps_title">No Gps</string>
+    <string name="turn_on_gps_message">It seems like your gps is inactive, do you want to turn it on?</string>
+</resources>
