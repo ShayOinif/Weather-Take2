@@ -1,28 +1,24 @@
 package com.shayo.weather.utils.gps
 
-import android.content.Context
-import android.content.IntentFilter
 import android.location.LocationManager
-import com.shayo.weather.broadcast.GpsReceiver
-import dagger.hilt.android.qualifiers.ApplicationContext
+import com.shayo.weather.utils.externalcoroutine.ExternalCoroutine
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class GpsCheckerImpl @Inject constructor(
-    private val gpsReceiver: GpsReceiver,
-    @ApplicationContext
-    private val appContext: Context,
+    private val externalCoroutine: ExternalCoroutine,
+    private val locationManager: LocationManager,
 ) : GpsChecker {
 
-    override val hasGps
-    get() = gpsReceiver.gpsStatus
+    private val _hasGps = MutableStateFlow(locationManager.isLocationEnabled)
+    override val hasGps: StateFlow<Boolean>
+    get() = _hasGps
 
-    override fun registerListener() {
-        IntentFilter(LocationManager.PROVIDERS_CHANGED_ACTION).also {
-            appContext.registerReceiver(gpsReceiver, it)
+    override fun refreshStatus() {
+        externalCoroutine.launch {
+            _hasGps.emit(locationManager.isLocationEnabled)
         }
-    }
-
-    override fun unRegisterListener() {
-        appContext.unregisterReceiver(gpsReceiver)
     }
 }

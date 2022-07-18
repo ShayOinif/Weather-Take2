@@ -1,18 +1,12 @@
 package com.shayo.weather.ui.main
 
-import android.Manifest
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.shayo.weather.R
-import com.shayo.weather.di.MainNavigator
-import com.shayo.weather.ui.utils.navigator.Navigator
-import com.shayo.weather.ui.utils.navigator.NavigatorParams
-import com.shayo.weather.ui.utils.permissionmanager.PermissionManager
-import com.shayo.weather.ui.utils.permissionmanager.PermissionRequest
 import com.shayo.weather.utils.gps.GpsChecker
 import com.shayo.weather.utils.networkstatuschecker.NetworkStatusChecker
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -20,67 +14,25 @@ import javax.inject.Inject
 class MainActivityViewModel @Inject constructor(
     private val networkStatusChecker: NetworkStatusChecker,
     private val gpsChecker: GpsChecker,
-    @MainNavigator
-    private val navigator: Navigator,
-    private val permissionManager: PermissionManager
 ) : ViewModel() {
+    private val _permissionStatus = MutableStateFlow(PermissionStatus.CHECKING)
+    val permissionStatus: StateFlow<PermissionStatus>
+    get() = _permissionStatus
 
-    val networkStatus = networkStatusChecker.hasInternet
+    val gpsStatus: StateFlow<Boolean>
+        get() = gpsChecker.hasGps
 
-    val gpsStatus = gpsChecker.hasGps
+    val networkStatus: StateFlow<Boolean>
+    get() = networkStatusChecker.hasInternet
 
-    fun registerRequest(
-        mainActivity: MainActivity
-    ) {
-        permissionManager.registerRequest(PermissionRequest(
-            mainActivity,
-            listOf(Manifest.permission.ACCESS_COARSE_LOCATION),
-            R.string.coarse_location_permission,
-            R.string.coarse_location_rationale,
-            R.string.coarse_location_no_permission_rationale,
-        ) {
-            Log.d(
-                "Shay",
-                if (it.containsValue(false))
-                    "no permissions"
-                else
-                    "has permission"
-            )
-        }
-        )
-    }
-
-    fun checkPermissions() {
-        permissionManager.checkPermissions()
-    }
-
-    fun unRegisterRequest() {
-        permissionManager.unRegisterRequest()
-    }
-
-    fun registerNetworkListener() =
+    fun updatePermissionStatus(permissionStatus: PermissionStatus) =
         viewModelScope.launch {
-            networkStatusChecker.registerListener()
+            _permissionStatus.emit(permissionStatus)
         }
+}
 
-
-    fun unRegisterNetworkListener() =
-        viewModelScope.launch {
-            networkStatusChecker.unRegisterListener()
-        }
-
-    fun registerGpsListener() =
-        viewModelScope.launch {
-            gpsChecker.registerListener()
-        }
-
-
-    fun unRegisterGpsListener() =
-        viewModelScope.launch {
-            gpsChecker.unRegisterListener()
-        }
-
-    fun resolveNavigation(navigationParams: NavigatorParams) {
-        navigator.resolveNavigation(navigationParams)
-    }
+enum class PermissionStatus {
+    CHECKING,
+    GRANTED,
+    DENIED
 }

@@ -12,7 +12,6 @@ import com.shayo.news.utils.imageloader.ImageLoader
 import com.shayo.weather.R
 import com.shayo.weather.databinding.FragmentHomeBinding
 import com.shayo.weather.ui.main.MainActivityViewModel
-import com.shayo.weather.ui.utils.navigator.NavigatorParams
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -78,12 +77,6 @@ class HomeFragment : Fragment() {
 
                 return when (menuItem.itemId) {
                     R.id.action_maps -> {
-                        mainActivityViewModel.resolveNavigation(
-                            NavigatorParams(
-                                this@HomeFragment,
-                            )
-                        )
-
                         true
                     }
                     else -> false

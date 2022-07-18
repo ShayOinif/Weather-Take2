@@ -1,12 +1,10 @@
 package com.shayo.weather.utils.networkstatuschecker
 
-import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
 
 interface NetworkStatusChecker {
 
-    val hasInternet: SharedFlow<Boolean>
+    val hasInternet: StateFlow<Boolean>
 
-    fun registerListener()
-
-    fun unRegisterListener()
+    fun refreshStatus()
 }

@@ -1,29 +1,36 @@
 package com.shayo.weather.utils.networkstatuschecker
 
-import android.content.Context
-import android.content.IntentFilter
-import com.shayo.weather.broadcast.NetworkReceiver
-import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.flow.SharedFlow
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import com.shayo.weather.utils.externalcoroutine.ExternalCoroutine
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class NetworkStatusCheckerImpl @Inject constructor(
-    private val networkReceiver: NetworkReceiver,
-    @ApplicationContext
-    private val appContext: Context,
+    private val externalCoroutine: ExternalCoroutine,
+    private val connectivityManager: ConnectivityManager,
 ) :
     NetworkStatusChecker {
 
-    override val hasInternet: SharedFlow<Boolean>
-        get() = networkReceiver.hasInternet
+    private val _hasInternet = MutableStateFlow(hasInternetConnection())
+    override val hasInternet: StateFlow<Boolean>
+        get() = _hasInternet
 
-    override fun registerListener() {
-        IntentFilter("android.net.conn.CONNECTIVITY_CHANGE").also {
-            appContext.registerReceiver(networkReceiver, it)
+    override fun refreshStatus() {
+        externalCoroutine.launch {
+            _hasInternet.emit(hasInternetConnection())
         }
     }
 
-    override fun unRegisterListener() {
-        appContext.unregisterReceiver(networkReceiver)
+    private fun hasInternetConnection(): Boolean {
+        val network = connectivityManager.activeNetwork ?: return false
+
+        val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
+
+        return capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
+                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) ||
+                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_VPN)
     }
 }

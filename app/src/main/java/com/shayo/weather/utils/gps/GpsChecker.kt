@@ -1,11 +1,9 @@
 package com.shayo.weather.utils.gps
 
-import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
 
 interface GpsChecker {
-    val hasGps: SharedFlow<Boolean>
+    val hasGps: StateFlow<Boolean>
 
-    fun registerListener()
-
-    fun unRegisterListener()
+    fun refreshStatus()
 }
