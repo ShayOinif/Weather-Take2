@@ -1,6 +1,6 @@
 package com.shayo.weather.data.weather.repository.mediator
 
-import android.location.Location
+import com.shayo.weather.data.location.model.Location
 import com.shayo.weather.data.weather.network.RemoteWeatherDatasource
 import com.shayo.weather.data.weather.network.model.TempUnits
 import kotlinx.coroutines.Dispatchers
@@ -15,8 +15,8 @@ class WeatherMediatorImpl @Inject constructor(
         tempUnits: TempUnits
     ) =
         remoteWeatherDatasource.getLatestWeather(
-            location.latitude,
-            location.longitude,
+            location.lat,
+            location.lng,
             tempUnits
         ).flowOn(Dispatchers.IO)
 }

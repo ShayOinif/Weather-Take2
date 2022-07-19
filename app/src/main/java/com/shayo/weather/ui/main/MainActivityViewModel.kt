@@ -29,6 +29,14 @@ class MainActivityViewModel @Inject constructor(
         viewModelScope.launch {
             _permissionStatus.emit(permissionStatus)
         }
+
+    fun registerNetworkMonitor() {
+        networkStatusChecker.registerNetworkMonitor()
+    }
+
+    fun unregisterNetworkMonitor() {
+        networkStatusChecker.unregisterNetworkMonitor()
+    }
 }
 
 enum class PermissionStatus {

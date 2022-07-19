@@ -10,5 +10,5 @@
     <string name="no_internet_message">Internet unavailable, showing cached data.</string>
 
     <string name="turn_on_gps_title">No Gps</string>
-    <string name="turn_on_gps_message">It seems like your gps is inactive, do you want to turn it on?</string>
+    <string name="turn_on_gps_message">It seems like your gps is inactive</string>
 </resources>

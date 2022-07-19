@@ -6,5 +6,7 @@ interface NetworkStatusChecker {
 
     val hasInternet: StateFlow<Boolean>
 
-    fun refreshStatus()
+    fun registerNetworkMonitor()
+
+    fun unregisterNetworkMonitor()
 }

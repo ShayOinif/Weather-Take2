@@ -5,14 +5,15 @@ import android.view.*
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.shayo.news.utils.imageloader.ImageLoader
 import com.shayo.weather.R
 import com.shayo.weather.databinding.FragmentHomeBinding
-import com.shayo.weather.ui.main.MainActivityViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collectLatest
 import javax.inject.Inject
 
 
@@ -23,8 +24,6 @@ class HomeFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val homeFragmentViewModel: HomeFragmentViewModel by viewModels()
-
-    private val mainActivityViewModel: MainActivityViewModel by activityViewModels()
 
     @Inject
     lateinit var imageLoader: ImageLoader
@@ -41,27 +40,30 @@ class HomeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
-        setupMenu()
+        //setupMenu()
 
-       /* lifecycleScope.launchWhenResumed {
+        lifecycleScope.launchWhenResumed {
             repeatOnLifecycle(Lifecycle.State.RESUMED) {
-                homeFragmentViewModel._status.collectLatest {
-                    if (it is HomeFragmentState.OK) {
-                        homeFragmentViewModel.getLocalWeather().collect {
+                homeFragmentViewModel.localWeatherFlow.collectLatest { localWeather ->
+                    when (localWeather) {
+                        is LocalWeather.NotEmpty -> {
+                            val weather = localWeather.weatherWithAddress.weather
+                            val address = localWeather.weatherWithAddress.address
+
                             with(binding) {
-                                imageLoader.load(
-                                    it.weather.icon,
+                                imageLoader.load(weather.icon,
                                     homeFragmentWeatherImageView
                                 )
-                                homeFragmentTempTextView.text = it.weather.temperature.toString()
-                                homeFragmentDescTextView.text = it.weather.summary
-                                homeFragmentLocationTextView.text = it.address
+                                homeFragmentTempTextView.text = weather.temperature.toString()
+                                homeFragmentDescTextView.text = weather.summary
+                                homeFragmentLocationTextView.text = address
                             }
                         }
+                        is LocalWeather.Empty -> binding.homeFragmentDescTextView.text = "No data yet"
                     }
                 }
             }
-        }*/
+        }
     }
 
     private fun setupMenu() {
@@ -83,10 +85,5 @@ class HomeFragment : Fragment() {
                 }
             }
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
-    }
-
-    override fun onResume() {
-        super.onResume()
-       // homeFragmentViewModel.checkPermissions(this@HomeFragment)
     }
 }

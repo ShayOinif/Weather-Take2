@@ -6,7 +6,6 @@ import android.content.IntentFilter
 import android.content.IntentSender
 import android.content.pm.PackageManager
 import android.location.LocationManager
-import android.net.ConnectivityManager
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.result.ActivityResultLauncher
@@ -30,7 +29,6 @@ import com.google.android.gms.tasks.Task
 import com.google.android.material.snackbar.Snackbar
 import com.shayo.weather.R
 import com.shayo.weather.broadcast.GpsReceiver
-import com.shayo.weather.broadcast.NetworkReceiver
 import com.shayo.weather.databinding.ActivityMainBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.Flow
@@ -60,9 +58,6 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var gpsReceiver: GpsReceiver
 
-    @Inject
-    lateinit var networkReceiver: NetworkReceiver
-
     private lateinit var snackbar: Snackbar
 
     private lateinit var deniedPermissionFlow: Flow<Boolean>
@@ -85,7 +80,9 @@ class MainActivity : AppCompatActivity() {
 
         // TODO: Move to functions
         lifecycleScope.launchWhenResumed {
+
             repeatOnLifecycle(Lifecycle.State.RESUMED) {
+
                 launch {
                     mainActivityViewModel.networkStatus.collectLatest { hasInternet ->
                         if (hasInternet) {
@@ -206,17 +203,14 @@ class MainActivity : AppCompatActivity() {
             IntentFilter(LocationManager.MODE_CHANGED_ACTION)
         )
 
-        registerReceiver(
-            networkReceiver,
-            IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
-        )
+        mainActivityViewModel.registerNetworkMonitor()
     }
 
     override fun onStop() {
         super.onStop()
 
         unregisterReceiver(gpsReceiver)
-        unregisterReceiver(networkReceiver)
+        mainActivityViewModel.unregisterNetworkMonitor()
     }
 
     override fun onDestroy() {
@@ -252,6 +246,14 @@ class MainActivity : AppCompatActivity() {
                 } catch (sendEx: IntentSender.SendIntentException) {
                     Log.d("Shay", "Catch")
                 }
+            } else {
+                showDialog(
+                    R.string.turn_on_gps_title,
+                    R.string.turn_on_gps_message,
+                    DialogButton(
+                        R.string.dialog_permission_button_positive
+                    ) {}
+                )
             }
         }
     }
