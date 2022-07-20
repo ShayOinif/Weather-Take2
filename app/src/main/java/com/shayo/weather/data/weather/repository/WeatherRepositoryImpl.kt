@@ -17,5 +17,12 @@ class WeatherRepositoryImpl @Inject constructor(
         weatherMediator.getWeatherByLocation(location)
 
     override suspend fun saveWeatherToCache(weather: Weather) =
-        localWeatherDatasource.insertWeather(weather)
+        localWeatherDatasource.deleteAll().fold(
+            {
+                localWeatherDatasource.insertWeather(weather)
+            },
+            {
+                Result.failure(it)
+            }
+        )
 }

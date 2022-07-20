@@ -1,6 +1,7 @@
 package com.shayo.weather.ui.home
 
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
@@ -51,9 +52,12 @@ class HomeFragment : Fragment() {
                             val address = localWeather.weatherWithAddress.address
 
                             with(binding) {
-                                imageLoader.load(weather.icon,
+                                imageLoader.load(weather.fullIcon,
                                     homeFragmentWeatherImageView
                                 )
+
+                                Log.d("Shay", weather.icon)
+                                Log.d("Shay", weather.fullIcon)
                                 homeFragmentTempTextView.text = weather.temperature.toString()
                                 homeFragmentDescTextView.text = weather.summary
                                 homeFragmentLocationTextView.text = address

@@ -26,6 +26,11 @@
             </intent-filter>
         </activity>
 
+        <service
+            android:name="com.shayo.weather.service.WeatherService"
+            android:enabled="true"
+            android:exported="false"/>
+
         <provider
             android:name="androidx.startup.InitializationProvider"
             android:authorities="${applicationId}.androidx-startup"

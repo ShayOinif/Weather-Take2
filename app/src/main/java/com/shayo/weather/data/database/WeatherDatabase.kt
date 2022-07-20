@@ -9,6 +9,8 @@ import com.shayo.weather.data.weather.model.Weather
 abstract class WeatherDatabase : RoomDatabase() {
     abstract fun weatherDao(): WeatherDao
 
+    abstract fun locationDao(): LocationDao
+
     companion object {
         const val DB_NAME = "WeatherDatabase.db"
     }

@@ -1,11 +1,9 @@
 package com.shayo.weather.data.weather.model
 
 import android.location.Location
-import android.os.Build.VERSION_CODES.S
-import androidx.room.ColumnInfo
 import androidx.room.Entity
 
-private const val IMAGE_URL_FORMAT = "https://assetambee.s3-us-west-2.amazonaws.com/weatherIcons/SVG/$S.svg"
+private const val IMAGE_URL_FORMAT = "https://assetambee.s3-us-west-2.amazonaws.com/weatherIcons/SVG/%s.svg"
 
 @Entity(tableName = "Weather", primaryKeys = ["lat", "lng", "time"])
 data class Weather(
@@ -24,13 +22,12 @@ data class Weather(
     val uvIndex: Double,
     val time: Long,
     val summary: String,
-    @ColumnInfo(name = "icon")
-    private val _icon: String,
+    val icon: String,
     val lng: Double,
     val precipIntensity: Double,
 ) {
-    val icon
-    get() = IMAGE_URL_FORMAT.format(_icon)
+    val fullIcon
+    get() = IMAGE_URL_FORMAT.format(icon)
 
     fun isInLocation(location: Location) =
         lat == location.latitude &&

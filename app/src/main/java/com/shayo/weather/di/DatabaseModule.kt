@@ -2,6 +2,7 @@ package com.shayo.weather.di
 
 import android.content.Context
 import androidx.room.Room
+import com.shayo.weather.data.database.LocationDao
 import com.shayo.weather.data.database.WeatherDao
 import com.shayo.weather.data.database.WeatherDatabase
 import dagger.Module
@@ -17,6 +18,11 @@ object DatabaseModule {
     @Provides
     fun provideWeatherDao(weatherDatabase: WeatherDatabase): WeatherDao {
         return weatherDatabase.weatherDao()
+    }
+
+    @Provides
+    fun provideLocationDao(weatherDatabase: WeatherDatabase): LocationDao {
+        return weatherDatabase.locationDao()
     }
 
     @Provides

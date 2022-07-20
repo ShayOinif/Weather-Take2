@@ -18,6 +18,7 @@ class LocationRepositoryImpl @Inject constructor(
         serviceLocationDatasource.getCurrentLocation()
     ) { localResult, serviceResult ->
         if (serviceResult.isSuccess) {
+            localLocationDatasource.deleteAll()
             localLocationDatasource.insertLocation(serviceResult.getOrNull()!!)
 
             serviceResult

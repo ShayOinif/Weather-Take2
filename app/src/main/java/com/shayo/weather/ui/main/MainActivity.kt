@@ -1,12 +1,11 @@
 package com.shayo.weather.ui.main
 
 import android.Manifest
-import android.content.Context
-import android.content.IntentFilter
-import android.content.IntentSender
+import android.content.*
 import android.content.pm.PackageManager
 import android.location.LocationManager
 import android.os.Bundle
+import android.os.IBinder
 import android.util.Log
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -30,6 +29,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.shayo.weather.R
 import com.shayo.weather.broadcast.GpsReceiver
 import com.shayo.weather.databinding.ActivityMainBinding
+import com.shayo.weather.service.WeatherService
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
@@ -61,6 +61,18 @@ class MainActivity : AppCompatActivity() {
     private lateinit var snackbar: Snackbar
 
     private lateinit var deniedPermissionFlow: Flow<Boolean>
+
+    private val weatherServiceConnection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName, service: IBinder) {
+            val weatherServiceBinder = service as WeatherService.WeatherServiceBinder
+            // TODO
+            Log.d("Shay", "connected")
+            weatherServiceBinder.refreshWeather(10_000)
+        }
+
+        override fun onServiceDisconnected(name: ComponentName) {
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -106,7 +118,6 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
                 }
-
             }
         }
     }
@@ -123,7 +134,7 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
 
-                    mainActivityViewModel.updatePermissionStatus(PermissionStatus.GRANTED)
+                    connectService()
                 } else {
                     lifecycleScope.launch {
                         deniedPermissionFlow.take(1).collectLatest {
@@ -134,9 +145,6 @@ class MainActivity : AppCompatActivity() {
                                     DialogButton(
                                         R.string.dialog_permission_button_positive
                                     ) {
-                                        mainActivityViewModel.updatePermissionStatus(
-                                            PermissionStatus.DENIED
-                                        )
                                     }
                                 )
 
@@ -147,6 +155,12 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             }
+    }
+
+    private fun connectService() {
+        Log.d("Shay", "trying to connect")
+        val serviceIntent = Intent(this, WeatherService::class.java)
+        bindService(serviceIntent, weatherServiceConnection, BIND_AUTO_CREATE)
     }
 
     private fun checkForLocationPermissions() {
@@ -161,7 +175,7 @@ class MainActivity : AppCompatActivity() {
                         preferences[DENIED_PERMISSION] = false
                     }
                 }
-                mainActivityViewModel.updatePermissionStatus(PermissionStatus.GRANTED)
+                connectService()
             }
             shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION) -> {
                 showDialog(
@@ -175,8 +189,6 @@ class MainActivity : AppCompatActivity() {
                     DialogButton(
                         R.string.dialog_permission_button_negative
                     ) {
-                        mainActivityViewModel.updatePermissionStatus(PermissionStatus.DENIED)
-
                         lifecycleScope.launch {
                             dataStore.edit { preferences ->
                                 preferences[DENIED_PERMISSION] = true
@@ -209,6 +221,7 @@ class MainActivity : AppCompatActivity() {
     override fun onStop() {
         super.onStop()
 
+        unbindService(weatherServiceConnection)
         unregisterReceiver(gpsReceiver)
         mainActivityViewModel.unregisterNetworkMonitor()
     }
@@ -237,14 +250,10 @@ class MainActivity : AppCompatActivity() {
         val task: Task<LocationSettingsResponse> = client.checkLocationSettings(builder.build())
 
         task.addOnFailureListener { exception ->
-            Log.d("Shay", "Exception")
             if (exception is ResolvableApiException) {
-                Log.d("Shay", "Resolvable")
                 try {
-                    Log.d("Shay", "Try")
                     exception.startResolutionForResult(this@MainActivity, 1)
                 } catch (sendEx: IntentSender.SendIntentException) {
-                    Log.d("Shay", "Catch")
                 }
             } else {
                 showDialog(
