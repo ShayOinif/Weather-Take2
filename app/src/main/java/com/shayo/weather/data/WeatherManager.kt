@@ -1,11 +1,11 @@
-package com.shayo.weather.data.weather.repository
+package com.shayo.weather.data
 
 import com.shayo.weather.data.database.LocalLocation
 import com.shayo.weather.data.database.LocalWeather
 import com.shayo.weather.data.weather.remote.TempUnits
 import kotlinx.coroutines.flow.Flow
 
-interface WeatherRepository {
+interface WeatherManager {
     val currentWeather: Flow<Result<LocalWeather>>
 
     suspend fun getWeatherByLocation(
@@ -13,8 +13,5 @@ interface WeatherRepository {
         tempUnits: TempUnits
     ): Result<LocalWeather>
 
-    suspend fun refreshCurrentWeather(
-        localLocation: LocalLocation,
-        tempUnits: TempUnits = TempUnits.Si
-    ): Result<Nothing?>
+    suspend fun refreshCurrentWeather(): Result<Nothing?>
 }

@@ -1,6 +1,7 @@
 package com.shayo.weather.ui.model
 
-import com.shayo.weather.data.weather.model.Weather
+import com.shayo.weather.model.Weather
+
 
 class WeatherWithAddress(
     val weather: Weather,

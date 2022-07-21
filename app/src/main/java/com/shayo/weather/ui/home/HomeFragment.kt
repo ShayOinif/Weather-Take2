@@ -1,7 +1,6 @@
 package com.shayo.weather.ui.home
 
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
@@ -16,7 +15,6 @@ import com.shayo.weather.databinding.FragmentHomeBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import javax.inject.Inject
-
 
 @AndroidEntryPoint
 class HomeFragment : Fragment() {
@@ -45,25 +43,22 @@ class HomeFragment : Fragment() {
 
         lifecycleScope.launchWhenResumed {
             repeatOnLifecycle(Lifecycle.State.RESUMED) {
-                homeFragmentViewModel.localWeatherFlow.collectLatest { localWeather ->
+                homeFragmentViewModel.currentWeatherFlow.collectLatest { localWeather ->
                     when (localWeather) {
-                        is LocalWeather.NotEmpty -> {
+                        is CurrentWeather.NotEmpty -> {
                             val weather = localWeather.weatherWithAddress.weather
                             val address = localWeather.weatherWithAddress.address
 
                             with(binding) {
-                                imageLoader.load(weather.fullIcon,
+                                imageLoader.load(weather.icon,
                                     homeFragmentWeatherImageView
                                 )
-
-                                Log.d("Shay", weather.icon)
-                                Log.d("Shay", weather.fullIcon)
                                 homeFragmentTempTextView.text = weather.temperature.toString()
                                 homeFragmentDescTextView.text = weather.summary
                                 homeFragmentLocationTextView.text = address
                             }
                         }
-                        is LocalWeather.Empty -> binding.homeFragmentDescTextView.text = "No data yet"
+                        is CurrentWeather.Empty -> binding.homeFragmentDescTextView.text = "No data yet"
                     }
                 }
             }

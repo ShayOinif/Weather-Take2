@@ -1,42 +1,41 @@
 package com.shayo.weather.ui.home
 
 import androidx.lifecycle.ViewModel
-import com.shayo.weather.domain.GetLocalWeatherUseCase
+import com.shayo.weather.domain.GetCurrentWeatherUseCase
 import com.shayo.weather.ui.model.WeatherWithAddress
 import com.shayo.weather.ui.utils.WeatherWithStreetMapper
+import com.shayo.weather.utils.WeatherAppThrowable
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
-private const val REFRESH_INTERVAL = 10_000L
-
 @HiltViewModel
 class HomeFragmentViewModel @Inject constructor(
-    private val getLocalWeatherUseCase: GetLocalWeatherUseCase,
-    private val weatherWithStreetMapper: WeatherWithStreetMapper
+    getCurrentWeatherUseCase: GetCurrentWeatherUseCase,
+    weatherWithStreetMapper: WeatherWithStreetMapper
 ) : ViewModel() {
 
-    val localWeatherFlow = getLocalWeatherUseCase.invoke().filter { it.isSuccess }.map { weatherResult ->
-        weatherResult.getOrNull().let {
-            it?.let { weather ->
-                LocalWeather.NotEmpty(
-                    weatherWithStreetMapper.mapToWeatherWithStreet(weather)
-                )
-            } ?: LocalWeather.Empty
+    val currentWeatherFlow = getCurrentWeatherUseCase.invoke()
+        .filter {
+            it.isSuccess || (it.isFailure && it.exceptionOrNull() == WeatherAppThrowable.NoCurrentWeather)
         }
-    }
-
-   /* fun getLocalWeather() =
-        weatherManager.getLatestLocalWeather(REFRESH_INTERVAL).map { weatherResult ->
-
-            weatherResult.onSuccess { weather ->
-                weatherWithStreetMapper.mapToWeatherWithStreet(weather)
-            }
-        }*/
+        .map { weatherResult ->
+            weatherResult
+                .fold(
+                    { weather ->
+                        CurrentWeather.NotEmpty(
+                            weatherWithStreetMapper.mapToWeatherWithStreet(weather)
+                        )
+                    },
+                    {
+                        CurrentWeather.Empty
+                    }
+                )
+        }
 }
 
-sealed class LocalWeather {
-    class NotEmpty(val weatherWithAddress: WeatherWithAddress) : LocalWeather()
-    object Empty : LocalWeather()
+sealed class CurrentWeather {
+    class NotEmpty(val weatherWithAddress: WeatherWithAddress) : CurrentWeather()
+    object Empty : CurrentWeather()
 }

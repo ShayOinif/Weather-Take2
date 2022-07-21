@@ -3,7 +3,7 @@ package com.shayo.weather.ui.utils
 import android.content.Context
 import android.location.Address
 import android.location.Geocoder
-import com.shayo.weather.data.weather.model.Weather
+import com.shayo.weather.model.Weather
 import com.shayo.weather.ui.model.WeatherWithAddress
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject

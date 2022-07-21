@@ -3,17 +3,16 @@ package com.shayo.weather.data.database
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
-import com.shayo.weather.data.weather.model.Weather
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface WeatherDao {
     @Query("SELECT * FROM weather")
-    fun getWeather(): Flow<Weather?>
+    fun getCurrentWeather(): Flow<LocalWeather?>
 
     @Insert
-    suspend fun insertWeather(weather: Weather)
+    suspend fun insertWeather(localWeather: LocalWeather)
 
     @Query("DELETE FROM weather")
-    suspend fun nukeTable()
+    suspend fun clear()
 }

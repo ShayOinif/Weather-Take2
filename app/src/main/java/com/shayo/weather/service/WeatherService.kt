@@ -21,6 +21,7 @@ class WeatherService : LifecycleService() {
     private val weatherServiceBinder = WeatherServiceBinder()
 
     private var weatherRefreshJob: Job? = null
+    private var running = false
 
     @Inject
     lateinit var refreshCurrentWeatherUseCase: RefreshCurrentWeatherUseCase
@@ -35,19 +36,14 @@ class WeatherService : LifecycleService() {
         Log.d(TAG, "refreshWeather()")
 
         if (weatherRefreshJob == null) {
+            running = true
             weatherRefreshJob = lifecycleScope.launch {
-                var success = true
-
-                while (success) {
+                while (running) {
                     Log.d("Shay", "collecting")
-                    refreshCurrentWeatherUseCase.invoke().collect {
-                        if (it.isFailure) {
-                            success = false
-                            weatherRefreshJob?.cancel()
-                        } else {
-                            delay(interval)
-                        }
-                    }
+                    refreshCurrentWeatherUseCase.invoke()
+
+                    if (running)
+                        delay(interval)
                 }
             }
         }

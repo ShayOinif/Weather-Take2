@@ -1,12 +1,12 @@
 package com.shayo.weather.data.weather.local
 
-import com.shayo.weather.data.weather.model.Weather
+import com.shayo.weather.data.database.LocalWeather
 import kotlinx.coroutines.flow.Flow
 
 interface LocalWeatherDatasource {
-    val currentWeather: Flow<Result<Weather?>>
+    val currentWeather: Flow<Result<LocalWeather>>
 
-    suspend fun insertWeather(weather: Weather): Result<Nothing?>
+    suspend fun insertWeather(localWeather: LocalWeather): Result<Nothing?>
 
-    suspend fun deleteAll(): Result<Nothing?>
+    suspend fun clear(): Result<Nothing?>
 }

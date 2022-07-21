@@ -1,6 +1,5 @@
-package com.shayo.weather.data.weather.network
+package com.shayo.weather.data.weather.remote
 
-import com.shayo.weather.data.weather.network.model.WeatherApiResponse
 import retrofit2.http.GET
 import retrofit2.http.Query
 

@@ -29,7 +29,8 @@
         <service
             android:name="com.shayo.weather.service.WeatherService"
             android:enabled="true"
-            android:exported="false"/>
+            android:exported="false"
+            android:foregroundServiceType="location"/>
 
         <provider
             android:name="androidx.startup.InitializationProvider"

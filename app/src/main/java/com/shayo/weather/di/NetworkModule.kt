@@ -1,7 +1,7 @@
 package com.shayo.weather.di
 
 import com.shayo.weather.BuildConfig.WEATHER_API_KEY
-import com.shayo.weather.data.weather.network.WeatherApi
+import com.shayo.weather.data.weather.remote.WeatherApi
 import com.shayo.weather.utils.runInDebug
 import dagger.Module
 import dagger.Provides

@@ -2,8 +2,8 @@ package com.shayo.weather.di
 
 import com.shayo.weather.data.weather.local.LocalWeatherDatasource
 import com.shayo.weather.data.weather.local.LocalWeatherDatasourceImpl
-import com.shayo.weather.data.weather.network.RemoteWeatherDatasource
-import com.shayo.weather.data.weather.network.RemoteWeatherDatasourceImpl
+import com.shayo.weather.data.weather.remote.RemoteWeatherDatasource
+import com.shayo.weather.data.weather.remote.RemoteWeatherDatasourceImpl
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
