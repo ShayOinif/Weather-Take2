@@ -6,7 +6,9 @@ import com.shayo.weather.ui.model.WeatherWithAddress
 import com.shayo.weather.ui.utils.WeatherWithStreetMapper
 import com.shayo.weather.utils.WeatherAppThrowable
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
@@ -24,15 +26,25 @@ class HomeFragmentViewModel @Inject constructor(
             weatherResult
                 .fold(
                     { weather ->
-                        CurrentWeather.NotEmpty(
-                            weatherWithStreetMapper.mapToWeatherWithStreet(weather)
+                        var currentWeather = CurrentWeather.NotEmpty(
+                            WeatherWithAddress(
+                                weather,
+                                null
+                            )
                         )
+                        // TODO change interfaces and maybe create repository and such
+
+                        weatherWithStreetMapper.mapToWeatherWithStreet(weather).collect {
+                            currentWeather = CurrentWeather.NotEmpty(it)
+                        }
+
+                        currentWeather
                     },
                     {
                         CurrentWeather.Empty
                     }
                 )
-        }
+        }.flowOn(Dispatchers.IO)
 }
 
 sealed class CurrentWeather {

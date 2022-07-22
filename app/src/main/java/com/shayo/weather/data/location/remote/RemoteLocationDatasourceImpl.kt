@@ -1,6 +1,8 @@
 package com.shayo.weather.data.location.remote
 
+import com.google.android.gms.location.CurrentLocationRequest
 import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.Granularity.GRANULARITY_PERMISSION_LEVEL
 import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationTokenSource
 import com.shayo.weather.utils.WeatherAppThrowable
@@ -19,8 +21,14 @@ class RemoteLocationDatasourceImpl @Inject constructor(
 
     override fun getCurrentLocation() =
         callbackFlow {
+            val request = CurrentLocationRequest.Builder()
+                .setGranularity(GRANULARITY_PERMISSION_LEVEL)
+                .setMaxUpdateAgeMillis(0)
+                .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
+                .build()
+            myLogger.logInfo(TAG, "Collecting remote location")
             fusedLocationClient.getCurrentLocation(
-                Priority.PRIORITY_BALANCED_POWER_ACCURACY,
+                request,
                 CancellationTokenSource().token
             ).addOnSuccessListener { locationResult ->
                 locationResult?.let { location ->
@@ -38,24 +46,8 @@ class RemoteLocationDatasourceImpl @Inject constructor(
                 close()
             }
 
-            awaitClose()
-        }
-
-
-            /*Result.failure<Location>(WeatherAppThrowable.NoRemoteLocation)
-
-        fusedLocationClient.getCurrentLocation(
-            PRIORITY_BALANCED_POWER_ACCURACY,
-            CancellationTokenSource().token
-        ).addOnSuccessListener { locationResult ->
-                locationResult?.let { location ->
-                    result = Result.success(location)
-                } ?: myLogger.logInfo(TAG, NO_LOCATION_MESSAGE)
-            }.addOnFailureListener { cause ->
-                myLogger.logError(TAG, cause.message)
-                result = Result.failure(WeatherAppThrowable.GpsError(cause.message))
+            awaitClose {
+                myLogger.logInfo(TAG, "Closed remote location flow")
             }
-
-        return result
-    }*/
+        }
 }

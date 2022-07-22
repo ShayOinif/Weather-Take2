@@ -10,8 +10,6 @@ import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 private const val TAG = "LocalLocationDatasourceImpl"
-private const val DEFAULT_LAT = 34.809626
-private const val DEFAULT_LNG = 32.160152
 
 class LocalLocationDatasourceImpl @Inject constructor(
     private val locationDao: LocationDao,
@@ -20,7 +18,8 @@ class LocalLocationDatasourceImpl @Inject constructor(
     override val currentLocation =
         locationDao.getCurrentLocation()
             .map { cachedLocation ->
-                Result.success(cachedLocation ?: getDefaultLocation())
+                myLogger.logInfo(TAG, "Collecting local location")
+                Result.success(cachedLocation)
             }
             .catch { cause ->
                 myLogger.logError(TAG, cause.message)
@@ -45,11 +44,4 @@ class LocalLocationDatasourceImpl @Inject constructor(
             locationDao.clear()
         }
 }
-
-private fun getDefaultLocation() =
-    LocalLocation(
-        DEFAULT_LAT,
-        DEFAULT_LNG,
-        System.currentTimeMillis()
-    )
 

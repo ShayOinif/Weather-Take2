@@ -1,9 +1,12 @@
 package com.shayo.weather.data
 
+import android.util.Log
 import com.shayo.weather.data.database.LocalLocation
 import com.shayo.weather.data.location.repository.LocationRepository
 import com.shayo.weather.data.weather.remote.TempUnits
 import com.shayo.weather.data.weather.repository.WeatherRepository
+import kotlinx.coroutines.flow.last
+import kotlinx.coroutines.flow.take
 import javax.inject.Inject
 
 class WeatherManagerImpl @Inject constructor(
@@ -24,16 +27,29 @@ class WeatherManagerImpl @Inject constructor(
 
     override suspend fun refreshCurrentWeather() =
         locationRepository.refreshCurrentLocation()
-            .mapCatching { refreshedLocation ->
-                weatherRepository.refreshCurrentWeather(
-                    refreshedLocation,
-                ).fold(
-                    {
-                        it
-                    },
-                    {
-                        throw it
-                    }
-                )
-            }
+            .recoverCatching {
+                Log.d("Shay", "No remote location in here")
+                val test = locationRepository.currentLocation.take(1).last().getOrNull()!!
+                Log.d("Shay", "No remote location in here, local location: $test")
+                test
+            }.fold(
+                { refreshedLocation ->
+                    Log.d("Shay", "location to query weather of is ${refreshedLocation.toString()}")
+                    weatherRepository.refreshCurrentWeather(
+                        refreshedLocation,
+                    ).fold(
+                        {
+                            Result.success(it)
+                        },
+                        {
+                            Result.failure(it)
+                        }
+                    )
+                }
+            ,
+                {
+                    Log.d("Shay", "A problem $it.message.toString()}")
+                    Result.failure(it)
+                }
+            )
 }

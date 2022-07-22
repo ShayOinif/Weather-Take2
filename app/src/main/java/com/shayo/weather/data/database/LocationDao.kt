@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface LocationDao {
     @Query("SELECT * FROM location")
-    fun getCurrentLocation(): Flow<LocalLocation?>
+    fun getCurrentLocation(): Flow<LocalLocation>
 
     @Insert
     suspend fun insertLocation(localLocation: LocalLocation)

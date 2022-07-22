@@ -17,8 +17,8 @@ class LocationRepositoryImpl @Inject constructor(
         var result = Result.failure<LocalLocation>(Throwable())
 
         locationMediator.getNewLocation()
-            .collect { localLocationResult ->
-                result = localLocationResult.fold(
+            .collect { remoteLocationResult ->
+                result = remoteLocationResult.fold(
                     onSuccess = { newLocation ->
                         localLocationDatasource.clear()
                             .fold(

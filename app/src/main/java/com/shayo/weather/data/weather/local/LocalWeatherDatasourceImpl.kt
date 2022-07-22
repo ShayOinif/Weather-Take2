@@ -19,6 +19,7 @@ class LocalWeatherDatasourceImpl @Inject constructor(
         weatherDao.getCurrentWeather()
             .map { localWeather ->
                 localWeather?.let {
+                    myLogger.logInfo(TAG, "Collecting local weather")
                     Result.success(it)
                 } ?: Result.failure(WeatherAppThrowable.NoCurrentWeather)
             }

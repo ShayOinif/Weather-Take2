@@ -41,27 +41,31 @@ class HomeFragment : Fragment() {
 
         //setupMenu()
 
-        lifecycleScope.launchWhenResumed {
-            repeatOnLifecycle(Lifecycle.State.RESUMED) {
-                homeFragmentViewModel.currentWeatherFlow.collectLatest { localWeather ->
-                    when (localWeather) {
-                        is CurrentWeather.NotEmpty -> {
-                            val weather = localWeather.weatherWithAddress.weather
-                            val address = localWeather.weatherWithAddress.address
+        lifecycleScope.launchWhenStarted {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                    homeFragmentViewModel.currentWeatherFlow.collectLatest { localWeather ->
+                            when (localWeather) {
+                                is CurrentWeather.NotEmpty -> {
+                                    val weather = localWeather.weatherWithAddress.weather
+                                    val address = localWeather.weatherWithAddress.address
 
-                            with(binding) {
-                                imageLoader.load(weather.icon,
-                                    homeFragmentWeatherImageView
-                                )
-                                homeFragmentTempTextView.text = weather.temperature.toString()
-                                homeFragmentDescTextView.text = weather.summary
-                                homeFragmentLocationTextView.text = address
+                                    with(binding) {
+                                        imageLoader.load(
+                                            weather.icon,
+                                            homeFragmentWeatherImageView
+                                        )
+                                        homeFragmentTempTextView.text =
+                                            weather.temperature.toString()
+                                        homeFragmentDescTextView.text = weather.summary
+                                        homeFragmentLocationTextView.text = address
+                                    }
+                                }
+                                is CurrentWeather.Empty -> binding.homeFragmentLocationTextView.text =
+                                    "No data yet"
                             }
                         }
-                        is CurrentWeather.Empty -> binding.homeFragmentDescTextView.text = "No data yet"
                     }
-                }
-            }
+
         }
     }
 

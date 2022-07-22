@@ -62,15 +62,24 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var deniedPermissionFlow: Flow<Boolean>
 
+    private var weatherService: WeatherService? = null
+
+    private var weatherServiceBoiund = false
+
     private val weatherServiceConnection = object : ServiceConnection {
+
         override fun onServiceConnected(name: ComponentName, service: IBinder) {
-            val weatherServiceBinder = service as WeatherService.WeatherServiceBinder
-            // TODO
-            Log.d("Shay", "connected")
-            weatherServiceBinder.refreshWeather(10_000)
+            Log.d("Shay", "weather service bound")
+            val binder = service as WeatherService.LocalBinder
+            weatherService = binder.service
+            weatherServiceBoiund = true
+            weatherService?.refreshWeather(10_000)
         }
 
         override fun onServiceDisconnected(name: ComponentName) {
+            Log.d("Shay", "weather service not bound")
+            weatherService = null
+            weatherServiceBoiund = false
         }
     }
 
@@ -97,6 +106,7 @@ class MainActivity : AppCompatActivity() {
 
                 launch {
                     mainActivityViewModel.networkStatus.collectLatest { hasInternet ->
+                        Log.d("Shay", "collecting internet")
                         if (hasInternet) {
                             snackbar.dismiss()
                         } else {
@@ -107,7 +117,7 @@ class MainActivity : AppCompatActivity() {
 
                 launch {
                     mainActivityViewModel.gpsStatus.collectLatest { hasGps ->
-                        Log.d("Shay", hasGps.toString())
+                        Log.d("Shay", "collecting gps")
                         if (hasGps) {
                             shownGps = false
                         } else {
@@ -134,7 +144,7 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
 
-                    connectService()
+                    startWeatherService()
                 } else {
                     lifecycleScope.launch {
                         deniedPermissionFlow.take(1).collectLatest {
@@ -157,10 +167,18 @@ class MainActivity : AppCompatActivity() {
             }
     }
 
-    private fun connectService() {
-        Log.d("Shay", "trying to connect")
+    private fun startWeatherService() {
         val serviceIntent = Intent(this, WeatherService::class.java)
-        bindService(serviceIntent, weatherServiceConnection, BIND_AUTO_CREATE)
+        bindService(serviceIntent, weatherServiceConnection, Context.BIND_AUTO_CREATE)
+    }
+
+    private fun stopWeatherService() {
+        if (weatherServiceBoiund) {
+
+        weatherService?.stopRefreshing()
+            unbindService(weatherServiceConnection)
+            weatherServiceBoiund = false
+        }
     }
 
     private fun checkForLocationPermissions() {
@@ -168,23 +186,23 @@ class MainActivity : AppCompatActivity() {
         when {
             ContextCompat.checkSelfPermission(
                 this,
-                Manifest.permission.ACCESS_COARSE_LOCATION
+                Manifest.permission.ACCESS_FINE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED -> {
                 lifecycleScope.launch {
                     dataStore.edit { preferences ->
                         preferences[DENIED_PERMISSION] = false
                     }
                 }
-                connectService()
+                startWeatherService()
             }
-            shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION) -> {
+            shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION) -> {
                 showDialog(
                     R.string.dialog_permission_request_title,
                     R.string.permission_rationale,
                     DialogButton(
                         R.string.dialog_permission_button_positive
                     ) {
-                        requestPermissionLauncher.launch(Manifest.permission.ACCESS_COARSE_LOCATION)
+                        requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
                     },
                     DialogButton(
                         R.string.dialog_permission_button_negative
@@ -199,7 +217,7 @@ class MainActivity : AppCompatActivity() {
             }
             else -> {
                 requestPermissionLauncher.launch(
-                    Manifest.permission.ACCESS_COARSE_LOCATION
+                    Manifest.permission.ACCESS_FINE_LOCATION
                 )
             }
         }
@@ -219,11 +237,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onStop() {
-        super.onStop()
 
-        unbindService(weatherServiceConnection)
+        stopWeatherService()
+
+
         unregisterReceiver(gpsReceiver)
         mainActivityViewModel.unregisterNetworkMonitor()
+
+        super.onStop()
     }
 
     override fun onDestroy() {
